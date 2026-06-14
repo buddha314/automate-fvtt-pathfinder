@@ -9,17 +9,32 @@
     }
   ],
   "compatibility": {
-    "minimum": "12",
-    "verified": "12"
+    "minimum": "13",
+    "verified": "13"
   },
   "relationships": {
     "systems": [
       {
-        "id": "automate-fvtt",
+        "id": "pf2e",
         "type": "system",
+        "reason": "This is a Pathfinder Second Edition adventure; its actors, items, and journals use the PF2e system."
+      }
+    ],
+    "requires": [
+      {
+        "id": "automate-fvtt",
+        "type": "module",
+        "manifest": "https://github.com/buddha314/automate-fvtt/releases/latest/download/module.json",
         "compatibility": {
           "minimum": "0.1.0"
-        }
+        },
+        "reason": "Provides the Keep / resource-automation engine this adventure showcases."
+      },
+      {
+        "id": "fabricate",
+        "type": "module",
+        "manifest": "https://github.com/mistersilver-uk/fabricate/releases/latest/download/module.json",
+        "reason": "Required by Automate FVTT for its crafting/gathering data model; Foundry does not install transitive dependencies, so it is listed here too."
       }
     ]
   },

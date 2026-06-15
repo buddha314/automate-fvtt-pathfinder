@@ -41,6 +41,14 @@
   "esmodules": [
     "scripts/module.js"
   ],
+  "packs": [
+    {
+      "name": "scenes",
+      "label": "Bandits on the River — Scenes",
+      "path": "packs/scenes",
+      "type": "Scene"
+    }
+  ],
   "media": [
     {
       "type": "cover",

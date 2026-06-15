@@ -14,11 +14,48 @@
  */
 
 import { compilePack, extractPack } from "@foundryvtt/foundryvtt-cli";
-import { readdirSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 
 const SRC = "src/packs";
 const OUT = "packs";
 const mode = process.argv[2] ?? "pack";
+
+/**
+ * A LevelDB pack allows only one writer. Foundry holds every module pack open
+ * while it runs AND rewrites them (enriching with schema defaults) at load —
+ * so compiling underneath a live Foundry can corrupt the pack, and even reads
+ * may catch a mid-write. Detect a running Foundry (Linux /proc scan) and stop.
+ * @returns {string|null} the Foundry pid, or null
+ */
+function foundryPid() {
+  try {
+    for (const pid of readdirSync("/proc")) {
+      if (!/^\d+$/.test(pid)) continue;
+      let cmd;
+      try {
+        cmd = readFileSync(`/proc/${pid}/cmdline`, "utf8").replace(/\0/g, " ");
+      } catch {
+        continue;
+      }
+      if (cmd.includes("foundryvtt") && cmd.includes("main.js")) return pid;
+    }
+  } catch {
+    /* non-Linux or no /proc — skip the check */
+  }
+  return null;
+}
+
+const pid = foundryPid();
+if (pid && !process.env.FORCE) {
+  const msg =
+    `Foundry appears to be running (pid ${pid}). It holds the LevelDB packs open` +
+    ` and rewrites them at load.`;
+  if (mode === "pack") {
+    console.error(`${msg}\nCompiling now risks corrupting a pack. Quit Foundry and retry, or set FORCE=1 to override.`);
+    process.exit(1);
+  }
+  console.warn(`${msg}\nExtracting may catch a mid-write; quit Foundry for a clean capture. (continuing)`);
+}
 
 const hasDocs = (dir) =>
   readdirSync(dir).some((f) => /\.(json|ya?ml)$/i.test(f));
